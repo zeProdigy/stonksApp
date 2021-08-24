@@ -1,0 +1,7 @@
+form(class="needs-validation")
+  div(class="container text-center" id="content")
+    div(class="form-group")
+      select(class="form-control")
+        each item in list
+          option= item
+    button(type="submit" class="btn btn-lg btn-primary mt-3") Готово!

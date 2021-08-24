@@ -1,0 +1,62 @@
+.info-card {
+	background-color: #fff;
+	border-radius: 10px;
+	box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+	display: flex;
+	max-width: 100%;
+	margin: 10px;
+	overflow: hidden;
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+.info-card-header {
+	background-color: #0d45cf;
+	color: #fff;
+	padding: 15px;
+	max-width: 150px;
+    font-family: 'Roboto Condensed', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.info-card-data {
+	padding: 20px;
+	position: relative;
+	width: 100%;
+}
+
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 1rem;
+    min-width: 400px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: #0d45cf;
+    color: #eaf2f8;
+    text-align: left;
+    font-size: 1rem;
+}
+
+.styled-table th,
+.styled-table td {
+    /* border: 1px solid #999; */
+    min-width:80px;
+    padding: 3px 15px;
+}
+
+.styled-table tbody tr {
+    border-bottom: thin solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #eaf2f8;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #0d45cf;
+}

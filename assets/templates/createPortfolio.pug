@@ -1,0 +1,22 @@
+form(class="needs-validation" novalidate)
+
+  div(class="container" id="content")
+    h1(class="text-center mb-5") Stonks!
+    input(class="form-control mb-1" type="text" placeholder="Имя" id="nameField" required)
+
+    div(class="custom-file mb-1")
+      input(type="file" class="custom-file-input" id="inputFile1" accept=".xlsx" required)
+      <label class="custom-file-label" for="inputFile1">Файл с операциями по счёту...
+
+    div(class="custom-file mb-1")
+      input(type="file" class="custom-file-input" id="inputFile2" accept=".xlsx" required)
+      <label class="custom-file-label" for="inputFile2">Файл со сделками...
+
+    div(class="custom-file mb-1")
+      input(type="file" class="custom-file-input" id="inputFile3" accept=".xlsx")
+      <label class="custom-file-label" for="inputFile3")><strong>[Опционально] Файл с выплатами...
+
+    h6(class="text-center mb-3") #[i Поддерживаются только файлы в формате #[b xlsx!]]
+
+    div(class="text-center")
+      button(type="submit" class="btn btn-lg btn-primary mt-3" id="confirmButton") Готово!

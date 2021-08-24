@@ -1,0 +1,69 @@
+div(class="container d-flex flex-wrap")
+
+  div(class="info-card")
+    div(class="info-card-header")
+      h5 Стоимость активов
+    div(class="info-card-data")
+      h4 #{portfolio.assets.all.currValue} &#8381;
+
+  div(class="info-card")
+    div(class="info-card-header")
+      h5 Доход
+    div(class="info-card-data")
+      h4 #{portfolio.return.total} &#8381;
+
+  div(class="info-card")
+    div(class="info-card-header")
+      h5 Доходность
+    div(class="info-card-data")
+      h4 #{portfolio.xirr}% &#8381;
+
+div
+  table(class="styled-table")
+    thead
+      tr
+        th Актив
+        th Стоимость
+        th Прибыль
+        th Доля
+    tbody
+      - for (let asset of Object.values(portfolio.assets)) {
+      tr
+        td #{asset.type}
+        td #{asset.currValue}
+        td #{asset.gain}
+        td #{asset.share}
+      - }
+
+div
+  table(class="styled-table sortable-table")
+    thead
+      tr
+        th Тикер
+        th Название
+        th(data-type="number") Кол-во
+        th(data-type="number") Текущая цена
+        th(data-type="number") Срердняя цена
+        th(data-type="number") Стоимость
+        th(data-type="number") Курсовая прибыль
+        th(data-type="number") От сделок
+        th(data-type="number") Прибыль
+        th(data-type="number") Выплаты
+        th(data-type="number") Доходность
+    tbody
+      - for (let share of Object.values(portfolio.shares)) {
+        tr
+          td
+            - let url = "#" + share.secid
+            a(href=url target="_blank") #{share.secid}
+          td #{share.shortName}
+          td #{share.quantity}
+          td #{share.currPrice}
+          td #{share.avgPrice}
+          td #{share.currValue}
+          td #{share.exchangeGain}
+          td #{share.closedDealsReturn}
+          td #{share.totalReturn}
+          td #{share.totalPayments}
+          td #{share.xirr}
+      - }
