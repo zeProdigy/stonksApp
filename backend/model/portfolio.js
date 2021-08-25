@@ -3,19 +3,21 @@ const securities = require('./securities');
 const xirr = require('xirr');
 
 
-function Assets(list) {
-    let assets = {};
+class Assets {
+    constructor(list) {
+        let assets = {};
 
-    list.forEach(type => {
-        assets[type] = {
-            "type": type,
-            "currValue": 0,
-            "gain": 0,
-            "share": 0,
-        };
-    })
+        list.forEach(type => {
+            assets[type] = {
+                "type": type,
+                "currValue": 0,
+                "gain": 0,
+                "share": 0,
+            };
+        });
 
-    return assets;
+        return assets;
+    }
 }
 
 
@@ -29,12 +31,13 @@ class Portfolio {
             this.operations = operations;
             this.payments   = payments;
         } else {
-            this.deals      = deals.filter(deal => deal.date <= new Date(onDate));
-            this.operations = operations.filter(op => op.date <= new Date(onDate));
-            this.payments   = payments.filter(payment => payment.date <= new Date(onDate));
+            const date = new Date(onDate);
+            this.deals      = deals.filter(deal => deal.date <= date);
+            this.operations = operations.filter(op => op.date <= date);
+            this.payments   = payments.filter(payment => payment.date <= date);
         }
 
-        this.onDate = onDate;
+        this.onDate = onDate;   // TODO! Дату можно хранить не в строке, а во встроенном типе Date
 
         this.cash = {
             "in": 0,
@@ -49,7 +52,7 @@ class Portfolio {
             "val": 0,
         };
 
-        this.investedTo = {
+        this.investedTo = { // TODO! Этот параметр отличается от this.assets?
             "shares": 0,
             "bonds": 0,
         };
@@ -64,7 +67,8 @@ class Portfolio {
         this.return = {
             "closedDeals": 0,
             "exchangeGain": 0,
-            "payments": 0,
+            "dividends": 0,
+            "coupons": 0,
             "total": 0,
         };
 
@@ -247,21 +251,27 @@ class Portfolio {
         Object.values(this.shares).forEach(share => {
             this.return.closedDeals += share.closedDealsReturn;
             this.return.exchangeGain += share.exchangeGain;
-            this.return.payments += share.totalPayments;
+            this.return.dividends += share.totalPayments;
         });
 
         Object.values(this.bonds).forEach(bond => {
             this.return.closedDeals += bond.closedDealsReturn;
             this.return.exchangeGain += bond.exchangeGain;
-            this.return.payments += bond.totalPayments;
+            this.return.coupons += bond.totalPayments;
         });
 
-        this.return.closedDeals = Number(this.return.closedDeals.toFixed(2));
+        this.return.closedDeals  = Number(this.return.closedDeals.toFixed(2));
         this.return.exchangeGain = Number(this.return.exchangeGain.toFixed(2));
-        this.return.payments = Number(this.return.payments.toFixed(2));
+        this.return.dividends    = Number(this.return.dividends.toFixed(2));
+        this.return.coupons      = Number(this.return.coupons.toFixed(2));
 
         this.return.total =
-            Number((this.return.closedDeals + this.return.exchangeGain + this.return.payments).toFixed(2));
+            Number(
+                (this.return.closedDeals +
+                 this.return.exchangeGain +
+                 this.return.dividends +
+                 this.return.coupons)
+                 .toFixed(2));
     }
 
     calcXirr() {

@@ -16,6 +16,10 @@ async function onHashChange() {
             scriptPath = "../js/main.js";
             break;
 
+        case '#portfolioShares':
+            htmlCode = await window.ipc.invoke('page:portfolioShares');
+            break;
+
         case '#hash2':
             htmlCode = await window.ipc.invoke('page:graph');
             break;

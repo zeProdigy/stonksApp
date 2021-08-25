@@ -2,9 +2,10 @@ console.log('main.js script is work!');
 
 let table = document.getElementsByClassName("sortable-table");
 
-table[0].querySelectorAll('th').forEach(th => {
-  	th.addEventListener('click', onColHeaderClick);
-});
+// TODO! Перенести на страницу с табличками
+// table[0].querySelectorAll('th').forEach(th => {
+//   	th.addEventListener('click', onColHeaderClick);
+// });
 
 function onColHeaderClick(event) {
     let th = event.currentTarget;

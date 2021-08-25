@@ -1,0 +1,89 @@
+div(class="container")
+
+    table(class="table table-sm")
+        thead(class="thead-light")
+            th(colspan="2") Счёт
+        tbody
+            tr
+                td Введено
+                td #{portfolio.cash.in}
+            tr
+                td Выведено
+                td #{portfolio.cash.out}
+            tr
+                td Итого
+                td #{portfolio.cash.val}
+
+    table(class="table table-sm")
+        thead(class="thead-light")
+            th(colspan="2") Комиссии
+        tbody
+            tr
+                td Брокер
+                td #{portfolio.commission.broker}
+            tr
+                td Биржа
+                td #{portfolio.commission.tradingSystem}
+            tr
+                td Депозитарий
+                td #{portfolio.commission.depository}
+            tr
+                td Итого
+                td #{portfolio.commission.val}
+
+    table(class="table table-sm")
+        thead(class="thead-light")
+            th(colspan="2") Активы
+        tbody
+            tr
+                td Деньги
+                td #{portfolio.assets.cash.currValue} (#{portfolio.assets.cash.share}%)
+            tr
+                td Акции
+                td #{portfolio.assets.shares.currValue} (#{portfolio.assets.shares.share}%)
+            tr
+                td Облигации
+                td #{portfolio.assets.bonds.currValue} (#{portfolio.assets.bonds.share}%)
+            tr
+                td Итого
+                td #{portfolio.assets.all.currValue} (#{portfolio.assets.all.share}%)
+
+    table(class="table table-sm")
+        thead(class="thead-light")
+            th(colspan="2") Доход
+        tbody
+            tr
+                td Сделки
+                td #{portfolio.return.closedDeals}
+            tr
+                td Курсовая стоимость
+                td #{portfolio.return.exchangeGain}
+            tr
+                td Дивиденды
+                td #{portfolio.return.dividends}
+            tr
+                td Купоны
+                td #{portfolio.return.coupons}
+            tr
+                td Сумма
+                td #{portfolio.return.total}
+
+    table(class="table table-sm")
+        thead(class="thead-light")
+            th(colspan="2") Время существования
+        tbody
+            tr
+                td Дней
+                td #{portfolio.lifetime}
+            tr
+
+    table(class="table table-sm")
+        thead(class="thead-light")
+            th(colspan="2") Доходность
+        tbody
+            tr
+                td Простая
+                td Пока нет
+            tr
+                td XIRR
+                td #{portfolio.xirr}

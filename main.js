@@ -15,6 +15,8 @@ controller.set(new Model(), null);
 
 app.on('ready', () => {
     mainWindow = new BrowserWindow({
+        width: 1400,
+        height: 800,
         webPreferences: {
             preload: path.join(app.getAppPath(), 'preload.js')
         },
@@ -22,7 +24,6 @@ app.on('ready', () => {
     });
 
     mainWindow.webContents.openDevTools();
-
     mainWindow.loadFile(path.join(app.getAppPath(), 'assets/pages/login.html'));
 });
 
@@ -35,10 +36,17 @@ app.on('window-all-closed', () => {
 
 
 ipcMain.handle('page:main', (event, data) => {
-    const file = path.join(__dirname, 'assets/templates/portfolio.pug');
+    const file = path.join(__dirname, 'assets/templates/portfolioSummary.pug');
     const compiledFunction = pug.compileFile(file);
     const portfolio = Controller.take().getPortfolio();
+    return compiledFunction({portfolio: portfolio});
+});
 
+
+ipcMain.handle('page:portfolioShares', (event, data) => {
+    const file = path.join(__dirname, 'assets/templates/portfolioShares.pug');
+    const compiledFunction = pug.compileFile(file);
+    const portfolio = Controller.take().getPortfolio();
     return compiledFunction({portfolio: portfolio});
 });
 
@@ -48,9 +56,10 @@ ipcMain.handle('page:graph', (event, data) => {
 });
 
 
-ipcMain.on('create-portfolio', (event, data) => {
+ipcMain.on('create-portfolio', async (event, data) => {
     console.log('Input: ', data);
     Controller.take().newPortfolio(data.name, data.files);
+    await controller.buildPortfolio(data.name);
     mainWindow.loadFile(path.join(app.getAppPath(), 'assets/pages/index.html'));
 });
 

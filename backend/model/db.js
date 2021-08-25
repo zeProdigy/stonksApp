@@ -1,7 +1,13 @@
 const app = require('electron').app;
 const path = require('path');
+const fs = require('fs');
 const lowdb = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
+
+const tmpPath = path.join(app.getAppPath(), 'temp');
+if (!fs.existsSync(tmpPath)) {
+    fs.mkdirSync(tmpPath);
+}
 
 const adapter = new FileSync(path.join(app.getAppPath(), 'temp/db.json'));
 const db = lowdb(adapter);
