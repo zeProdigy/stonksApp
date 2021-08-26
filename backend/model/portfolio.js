@@ -335,7 +335,7 @@ class Portfolio {
         });
 
         transactions.push({
-            "amount": this.assets["all"].currValue + this.return.payments,
+            "amount": this.assets.all.currValue + this.return.dividends + this.return.coupons,
             "when": Date.now()
         });
 
@@ -343,7 +343,7 @@ class Portfolio {
             this.xirr = Number((xirr(transactions) * 100).toFixed(2));
         } catch(err) {
             this.xirr = NaN;
-            console.log(`Failed to calc XIRR for ${this.secid}`);
+            console.log(`Failed to calc XIRR for Portfolio`);
         }
     }
 }
