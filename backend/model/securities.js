@@ -209,7 +209,7 @@ class Security {
     }
 
     calcTotalValue() {
-        this.currValue = Number((this.quantity * this.currPrice).toFixed(this.spec.mainboard.decimals));
+        this.currValue = Number((this.quantity * this.currPrice).toFixed(2));
     }
 
     calcTotalCommission() {
@@ -309,7 +309,7 @@ class Bond extends Security {
     calcTotalValue() {
         this.currValue = Number(
             ((this.currPrice + this.accruedInterest) * this.quantity)
-            .toFixed(this.spec.mainboard.decimals));
+            .toFixed(2));
     }
 
     calcTotalReturn() {

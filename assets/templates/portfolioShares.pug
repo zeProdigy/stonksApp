@@ -32,6 +32,7 @@ div
         th(data-type="number") Прибыль
         th(data-type="number") Выплаты
         th(data-type="number") Доходность
+        th(data-type="number") XIRR
     tbody
       - for (let share of Object.values(portfolio.shares)) {
         tr
@@ -47,5 +48,6 @@ div
           td #{share.closedDealsReturn}
           td #{share.totalReturn}
           td #{share.totalPayments}
+          td #{share.totalReturnRate}
           td #{share.xirr}
       - }

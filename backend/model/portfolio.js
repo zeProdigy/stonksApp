@@ -225,10 +225,16 @@ class Portfolio {
             this.assets["shares"].gain += share.exchangeGain;
         });
 
+        this.assets.shares.currValue = Number(
+            this.assets.shares.currValue.toFixed(2));
+
         Object.values(this.bonds).forEach(bond => {
             this.assets["bonds"].currValue += bond.currValue;
             this.assets["bonds"].gain += bond.exchangeGain;
         });
+
+        this.assets.bonds.currValue = Number(
+            this.assets.bonds.currValue.toFixed(2));
 
         this.assets["all"].currValue =
             Number((this.assets["shares"].currValue +
