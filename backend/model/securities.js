@@ -4,7 +4,7 @@ const xirr = require('xirr');
 
 
 class Security {
-    constructor(secid, deals, payments) {
+    constructor(secid, deals, payments=[]) {
         this.secid = secid;
         this.deals = deals;
         this.payments = payments;
@@ -232,11 +232,11 @@ class Security {
 
 
 class Share extends Security {
-    constructor(secid, deals, payments) {
+    constructor(secid, deals, payments=[]) {
         super(secid, deals, payments);
     }
 
-    async build(onDate) {
+    async build(onDate=null) {
         try {
             await super.build();
         } catch(err) {
@@ -274,7 +274,7 @@ class Share extends Security {
 
 
 class Bond extends Security {
-    constructor(secid, deals, payments) {
+    constructor(secid, deals, payments=[]) {
         super(secid, deals, payments);
     }
 
