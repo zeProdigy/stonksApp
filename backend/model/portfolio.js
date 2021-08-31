@@ -372,6 +372,7 @@ class Portfolio {
         this.deals.forEach(deal => {
             switch(deal.securityType) {
                 case "Акция":
+                case "Депозитарная расписка":
                     this.volume.shares += deal.volume;
                     break;
 

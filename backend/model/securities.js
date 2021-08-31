@@ -283,11 +283,6 @@ class Bond extends Security {
 
         this.lotValue = this.spec.description['FACEVALUE'];
 
-        /*
-            в отчёте сбербанка цена облигации указана в %, это не удобно для рассчётов, так
-            как тогда придётся практически для всех рассчётов по облигациям делать отдельные формулы,
-            а не брать реализованные в родительском классе
-        */
         this.fixSberbankReportPrice();
 
         if (this.spec.mainboard.is_traded) {
@@ -305,6 +300,11 @@ class Bond extends Security {
         }
     }
 
+    /*
+        в отчёте сбербанка цена облигации указана в %, это не удобно для рассчётов, так
+        как тогда придётся практически для всех рассчётов по облигациям делать отдельные формулы,
+        а не брать реализованные в родительском классе
+    */
     fixSberbankReportPrice() {
         this.deals.forEach(deal => {
             deal.price *= this.lotValue / 100;
