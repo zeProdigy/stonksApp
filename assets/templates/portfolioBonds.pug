@@ -1,0 +1,40 @@
+div(class="container d-flex flex-wrap")
+
+div
+  table(class="styled-table sortable-table")
+    thead
+      tr
+        th ISIN
+        th Название
+        th(data-type="number") Кол-во
+        th(data-type="number") Текущая цена
+        th(data-type="number") Средняя цена
+        th(data-type="number") Стоимость
+        th(data-type="number") Выплаченный НКД
+        th(data-type="number") Накопленный НКД
+        th(data-type="number") Курсовая прибыль
+        th(data-type="number") От сделок
+        th(data-type="number") Прибыль
+        th(data-type="number") Выплаты
+        th(data-type="number") Доходность
+        th(data-type="number") XIRR
+    tbody
+      - for (let bond of Object.values(portfolio.bonds)) {
+        tr
+          td
+            - let url = "#" + bond.secid
+            a(href=url target="_blank") #{bond.secid}
+          td #{bond.shortName}
+          td #{bond.quantity}
+          td #{bond.currPrice}
+          td #{bond.avgPrice}
+          td #{bond.currValue}
+          td #{bond.paidAccruedInterest}
+          td #{bond.accruedInterest}
+          td #{bond.exchangeGain}
+          td #{bond.closedDealsReturn}
+          td #{bond.totalReturn}
+          td #{bond.totalPayments}
+          td #{bond.totalReturnRate}
+          td #{bond.xirr}
+      - }

@@ -281,21 +281,26 @@ class Bond extends Security {
     async build() {
         await super.build();
 
+        this.lotValue = this.spec.description['FACEVALUE'];
+
+        /*
+            в отчёте сбербанка цена облигации указана в %, это не удобно для рассчётов, так
+            как тогда придётся практически для всех рассчётов по облигациям делать отдельные формулы,
+            а не брать реализованные в родительском классе
+        */
+        this.fixSberbankReportPrice();
+
         if (this.spec.mainboard.is_traded) {
             let info = await moexISS.info(this.spec.mainboard);
 
-            this.lotValue = info.securities['LOTVALUE'];
             this.currPrice = info.marketdata['LCURRENTPRICE'] * this.lotValue / 100;
             this.accruedInterest = info.securities['ACCRUEDINT'];
-
-            // в отчёте сбербанка цена облигации указана в %, это не удобно для рассчётов, так
-            // как тогда придётся практически для всех рассчётов по облигациям делать отдельные формулы,
-            // а не брать реализованные в родительском классе
-            this.fixSberbankReportPrice();
 
             super.processDeals(this.deals);
             super.calcAll();
         } else {
+            super.processDeals(this.deals);
+            super.calcAll();
             console.log(`The ${this.secid} bond is repaid`);
         }
     }

@@ -51,6 +51,14 @@ ipcMain.handle('page:portfolioShares', (event, data) => {
 });
 
 
+ipcMain.handle('page:portfolioBonds', (event, data) => {
+    const file = path.join(__dirname, 'assets/templates/portfolioBonds.pug');
+    const compiledFunction = pug.compileFile(file);
+    const portfolio = Controller.take().getPortfolio();
+    return compiledFunction({portfolio: portfolio});
+});
+
+
 ipcMain.handle('page:graph', (event, data) => {
     return '<h1>Page with beautifull graphs';
 });

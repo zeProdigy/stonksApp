@@ -20,6 +20,10 @@ async function onHashChange() {
             htmlCode = await window.ipc.invoke('page:portfolioShares');
             break;
 
+        case '#portfolioBonds':
+            htmlCode = await window.ipc.invoke('page:portfolioBonds');
+            break;
+
         case '#hash2':
             htmlCode = await window.ipc.invoke('page:graph');
             break;

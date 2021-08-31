@@ -70,12 +70,28 @@ div(class="container")
 
     table(class="table table-sm")
         thead(class="thead-light")
+            th(colspan="2") Объём торгов
+        tbody
+            tr
+                td Акции
+                td #{portfolio.volume.shares}
+            tr
+                td Облигации
+                td #{portfolio.volume.bonds}
+            tr
+                td ETF's
+                td #{portfolio.volume.etfs}
+            tr
+                td Общий
+                td #{portfolio.volume.overall}
+
+    table(class="table table-sm")
+        thead(class="thead-light")
             th(colspan="2") Время существования
         tbody
             tr
                 td Дней
                 td #{portfolio.lifetime}
-            tr
 
     table(class="table table-sm")
         thead(class="thead-light")

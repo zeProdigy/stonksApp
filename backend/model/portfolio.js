@@ -37,7 +37,7 @@ class Portfolio {
             this.payments   = payments.filter(payment => payment.date <= date);
         }
 
-        this.onDate = onDate;   // TODO! Дату можно хранить не в строке, а во встроенном типе Date
+        this.onDate = onDate;
 
         this.cash = {
             "in": 0,
@@ -72,6 +72,14 @@ class Portfolio {
             "total": 0,
         };
 
+        // объёмы торгов
+        this.volume = {
+            "shares": 0,
+            "bonds": 0,
+            "etfs": 0,
+            "overall": 0
+        };
+
         // доходность XIRR
         this.xirr = 0;
     }
@@ -96,6 +104,7 @@ class Portfolio {
         this.calcProportions();
         this.calcMarketValue();
         this.calcReturn();
+        this.calcVolumes();
         this.calcXirr();
     }
 
@@ -130,6 +139,14 @@ class Portfolio {
 
                 case "Вывод ДС":
                     this.cash.out += op.volume;
+                    break;
+
+                case "Перевод ДС":
+                    if (op.contract === op.to_contract) {
+                        this.cash.in += op.volume;
+                    } else {
+                        this.cash.out += op.volume;
+                    }
                     break;
 
                 case "Списание комиссии":
@@ -201,8 +218,8 @@ class Portfolio {
     }
 
     calcLifetime() {
-        let now = (this.onDate === null) ? Date.now() : new Date(this.onDate);
-        let firstOperation = new Date(this.operations[0].date);   // считаем от времени первой сделки
+        const now = (this.onDate === null) ? Date.now() : new Date(this.onDate);
+        const firstOperation = new Date(this.operations[0].date);   // считаем от времени первой сделки
         this.lifetime = Math.round((now - firstOperation.valueOf()) / (1000 * 60 * 60 * 24));
     }
 
@@ -312,7 +329,11 @@ class Portfolio {
                     break;
 
                 case "Перевод ДС":
-                    // перевод между своими счетами. Не влияет
+                    if (op.contract === op.to_contract) {
+                        volume = -op.volume;
+                    } else {
+                        volume = op.volume;
+                    }
                     break;
 
                 default:
@@ -345,6 +366,37 @@ class Portfolio {
             this.xirr = NaN;
             console.log(`Failed to calc XIRR for Portfolio`);
         }
+    }
+
+    calcVolumes() {
+        this.deals.forEach(deal => {
+            switch(deal.securityType) {
+                case "Акция":
+                    this.volume.shares += deal.volume;
+                    break;
+
+                case "Облигация":
+                    this.volume.bonds += deal.volume;
+                    break;
+
+                case "Пай":
+                    this.volume.etfs += deal.volume;
+                    break;
+
+                default:
+                    console.log(`Unhandled type of security: ${deal.securityType}`);
+                    break;
+            }
+        });
+
+        this.volume.overall = this.volume.shares +
+                              this.volume.bonds +
+                              this.volume.etfs;
+
+        this.volume.shares  = Number((this.volume.shares).toFixed(2));
+        this.volume.bonds   = Number((this.volume.bonds).toFixed(2));
+        this.volume.etfs    = Number((this.volume.etfs).toFixed(2));
+        this.volume.overall = Number((this.volume.overall).toFixed(2));
     }
 }
 

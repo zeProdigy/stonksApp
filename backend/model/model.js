@@ -36,7 +36,6 @@ class Model {
             let db = this.db.getPortfolioByName(name);
             this.portfolio = new Portfolio(db.deals, db.operations, db.payments);
             await this.portfolio.build();
-            console.log(this.portfolio.assetValue);
         } catch(err) {
             console.log(`Model error: ${err}`);
         }
