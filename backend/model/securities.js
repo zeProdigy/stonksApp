@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 const moexISS = require('./moexISS');
+const DataParser = require('./dataParser');
 const xirr = require('xirr');
 
 
@@ -234,6 +235,8 @@ class Security {
 class Share extends Security {
     constructor(secid, deals, payments=[]) {
         super(secid, deals, payments);
+        // сумма дивидендов по бумаге
+        this.dividends = 0;
     }
 
     async build(onDate=null) {
@@ -276,13 +279,24 @@ class Share extends Security {
 class Bond extends Security {
     constructor(secid, deals, payments=[]) {
         super(secid, deals, payments);
+        /*
+            даже если в таблице с выплатами были записи о выплатах по облигациям,
+            то мы их не используем и всю информацию будем брать с биржи
+        */
+        this.payments = [];
+
+        // сумма купонных выплат
+        this.coupons = 0;
+
+        // сумма амортизаций/погашения
+        this.repaid = 0;
     }
 
     async build() {
         await super.build();
+        super.processDeals(this.deals);
 
         this.lotValue = this.spec.description['FACEVALUE'];
-
         this.fixSberbankReportPrice();
 
         if (this.spec.mainboard.is_traded) {
@@ -290,20 +304,61 @@ class Bond extends Security {
 
             this.currPrice = info.marketdata['LCURRENTPRICE'] * this.lotValue / 100;
             this.accruedInterest = info.securities['ACCRUEDINT'];
-
-            super.processDeals(this.deals);
-            super.calcAll();
         } else {
-            super.processDeals(this.deals);
-            super.calcAll();
+            // обнуляем количество, так-как на текущую дату облигации были погашены
+            this.quantity = 0;
             console.log(`The ${this.secid} bond is repaid`);
         }
+
+        await this.calcPayments();
+        super.calcAll();
+    }
+
+    async calcPayments() {
+        const payments = await moexISS.coupons(this.spec.mainboard);
+
+        payments.coupons.forEach(coupon => {
+            const coupondate = new Date(coupon.coupondate);
+
+            if (coupondate <= Date.now()) {
+                const quantity = this.#getQuantityOnDate(coupon.coupondate);
+
+                if (quantity > 0) {
+                    let record = new DataParser.PaymentRecord();
+                    record.secid = this.secid;
+                    record.date = coupon.coupondate;
+                    record.quantity = quantity
+                    record.payment = coupon.value;
+                    // TODO! Ставку нужно вынести как настраиваемый на уровне проекта параметр
+                    record.actually = coupon.value * quantity * 0.87;
+                    this.payments.push(record);
+                }
+            }
+        });
+
+        payments.amortizations.forEach(amortization => {
+            const amortdate = new Date(amortization.amortdate);
+
+            if (amortdate <= Date.now()) {
+                const quantity = this.#getQuantityOnDate(amortization.amortdate);
+
+                if (quantity > 0) {
+                    let record = new DataParser.PaymentRecord();
+                    record.secid = this.secid;
+                    record.date = amortization.amortdate;
+                    record.quantity = quantity;
+                    record.payment = amortization.value;
+                    record.actually = amortization.value * quantity;
+                    this.payments.push(record);
+                }
+            }
+        });
     }
 
     /*
-        в отчёте сбербанка цена облигации указана в %, это не удобно для рассчётов, так
-        как тогда придётся практически для всех рассчётов по облигациям делать отдельные формулы,
-        а не брать реализованные в родительском классе
+        в отчёте сбербанка цена облигации указана в %, это не удобно для рассчётов,
+        так как тогда придётся практически для всех рассчётов по облигациям делать
+        отдельные формулы, а не брать реализованные в родительском классе
     */
     fixSberbankReportPrice() {
         this.deals.forEach(deal => {
@@ -317,10 +372,23 @@ class Bond extends Security {
             .toFixed(2));
     }
 
+    #getQuantityOnDate(date) {
+        let quantity = 0;
+        const deals = this.deals.filter(deal => deal.date <= date);
+
+        deals.forEach(deal => {
+            quantity += deal.quantity;
+        });
+
+        return quantity;
+    }
+
     calcTotalReturn() {
         this.payments.forEach(payment => {
             this.totalPayments += payment.actually;
         });
+
+        this.totalPayments = Number((this.totalPayments).toFixed(2));
 
         this.totalReturn = Number(
             (this.closedDealsReturn +
@@ -329,7 +397,7 @@ class Bond extends Security {
              this.accruedInterest * this.quantity -
              this.paidAccruedInterest -
              this.totalCommissions)
-            .toFixed(this.spec.mainboard.decimals));
+            .toFixed(2));
     }
 }
 

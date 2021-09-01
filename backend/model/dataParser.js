@@ -131,14 +131,25 @@ class OperationRecord {
 
 
 class PaymentRecord {
-    constructor (tableRow) {
-        this.secid = tableRow['Код инструмента'];
-        this.date = utils.toMoexDateFormat(tableRow['Дата']);
-        this.quantity = tableRow['Кол-во'];
-        this.payment = Number(tableRow['Купон/дивиденд']);
-        this.actually = Number(tableRow['Фактически']);
+    constructor (tableRow=null) {
+        if (tableRow) {
+            this.secid = tableRow['Код инструмента'];
+            this.date = utils.toMoexDateFormat(tableRow['Дата']);
+            this.quantity = tableRow['Кол-во'];
+            this.payment = Number(tableRow['Купон/дивиденд']);
+            this.actually = Number(tableRow['Фактически']);
+        } else {
+            this.secid = "";
+            this.date = "";
+            this.quantity = 0;
+            this.payment = 0;
+            this.actually = 0;
+        }
     }
 }
 
 
-module.exports = DataParser;
+module.exports = {
+    DataParser,
+    PaymentRecord
+};

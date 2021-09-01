@@ -1,5 +1,5 @@
 const Portfolio = require('../backend/model/portfolio');
-const parser = require('../backend/model/dataParser');
+const parser = require('../backend/model/dataParser').DataParser;
 const path = require('path');
 const { Share } = require('../backend/model/securities');
 

@@ -170,19 +170,12 @@ class Portfolio {
                     break;
 
                 case "Зачисление дивидендов":
-                    this.assets["cash"].currValue += op.volume;
-                    break;
-
                 case "Зачисление купона":
-                    this.assets["cash"].currValue += op.volume;
-                    break;
-
                 case "Зачисление суммы от погашения ЦБ":
-                    this.assets["cash"].currValue += op.volume;
-                    break;
-
-                case "Перевод ДС":
-                    // перевод между своими счетами. Не влияет на общий кэш
+                    // Дивиденды и купоны могут выводиться на внешний счёт,
+                    // поэтому не учитываем их при рассчёте остатка. Дивиденды
+                    // беруться из таблицы с выплатами, купоны и погашение
+                    // облигаций рассчитываются на основании информации с биржи.
                     break;
 
                 default:
@@ -192,16 +185,16 @@ class Portfolio {
 
         this.cash.val = this.cash.in - this.cash.out;
 
-        this.assets["cash"].currValue += this.cash.val;
+        this.assets.cash.currValue += this.cash.val;
 
         this.deals.forEach(deal => {
             switch (deal.operation) {
                 case "Покупка":
-                    this.assets["cash"].currValue -= deal.income;
+                    this.assets.cash.currValue -= deal.income;
                     break;
 
                 case "Продажа":
-                    this.assets["cash"].currValue += deal.income;
+                    this.assets.cash.currValue += deal.income;
                     break;
 
                 default:
@@ -209,12 +202,25 @@ class Portfolio {
             }
         });
 
-        this.assets["cash"].currValue = Number(this.assets["cash"].currValue.toFixed(2));
+        Object.values(this.shares).forEach(share => {
+            this.assets.cash.currValue += share.totalPayments;
+        });
+
+        Object.values(this.bonds).forEach(bond => {
+            this.assets.cash.currValue += bond.totalPayments;
+        });
+
+        this.assets.cash.currValue =
+            Number(this.assets.cash.currValue.toFixed(2));
 
         this.commission.broker = Number(this.commission.broker.toFixed(2));
-        this.commission.tradingSystem = Number(this.commission.tradingSystem.toFixed(2));
+        this.commission.tradingSystem =
+            Number(this.commission.tradingSystem.toFixed(2));
         this.commission.val =
-            Number((this.commission.broker + this.commission.tradingSystem).toFixed(2));
+            Number((
+                this.commission.broker +
+                this.commission.tradingSystem)
+                .toFixed(2));
     }
 
     calcLifetime() {
@@ -238,31 +244,31 @@ class Portfolio {
 
     calcMarketValue() {
         Object.values(this.shares).forEach(share => {
-            this.assets["shares"].currValue += share.currValue;
-            this.assets["shares"].gain += share.exchangeGain;
+            this.assets.shares.currValue += share.currValue;
+            this.assets.shares.gain += share.exchangeGain;
         });
 
         this.assets.shares.currValue = Number(
             this.assets.shares.currValue.toFixed(2));
 
         Object.values(this.bonds).forEach(bond => {
-            this.assets["bonds"].currValue += bond.currValue;
-            this.assets["bonds"].gain += bond.exchangeGain;
+            this.assets.bonds.currValue += bond.currValue;
+            this.assets.bonds.gain += bond.exchangeGain;
         });
 
         this.assets.bonds.currValue = Number(
             this.assets.bonds.currValue.toFixed(2));
 
-        this.assets["all"].currValue =
-            Number((this.assets["shares"].currValue +
-                    this.assets["bonds"].currValue +
-                    this.assets["cash"].currValue)
+        this.assets.all.currValue =
+            Number((this.assets.shares.currValue +
+                    this.assets.bonds.currValue +
+                    this.assets.cash.currValue)
                     .toFixed(2));
 
-        this.assets["all"].gain =
-            Number((this.assets["shares"].gain +
-                    this.assets["bonds"].gain +
-                    this.assets["cash"].gain)
+        this.assets.all.gain =
+            Number((this.assets.shares.gain +
+                    this.assets.bonds.gain +
+                    this.assets.cash.gain)
                     .toFixed(2));
 
         this.assets.cash.share = Number((this.assets.cash.currValue / this.assets.all.currValue * 100).toFixed(2));
