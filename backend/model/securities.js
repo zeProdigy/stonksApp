@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 const moexISS = require('./moexISS');
-const DataParser = require('./dataParser');
 const xirr = require('xirr');
 
 
@@ -36,21 +35,12 @@ class Security {
         // доходность % относительно вложений
         this.totalReturnRate = 0;
 
-        // суммарные дивиденды/купоны
-        this.totalPayments = 0;
-
         // сумарные комиссии
         this.totalCommissions = 0;
 
         // объём покупок/продаж по инструменту
         this.totalVolumeBuy = 0;
         this.totalVolumeSell = 0;
-
-        // выплаченный НКД (для облигаций, для акций просто будет равен нулю)
-        this.paidAccruedInterest = 0;
-
-        // текущий НКД (для облигаций, для акций просто будет равен нулю)
-        this.accruedInterest = 0;
 
         // доходность в процентах годовых. Рассчитана по алгоритму XIRR
         this.xirr = 0;
@@ -85,7 +75,6 @@ class Security {
     processDeals(deals) {
         deals.forEach(deal => {
             this.quantity += deal.quantity;
-            this.paidAccruedInterest += deal.accruedInterest;
             this.update(deal);
         });
     }
@@ -153,14 +142,76 @@ class Security {
         }
     }
 
-    calcTotalReturn() {
-        this.payments.forEach(payment => {
-            this.totalPayments += payment.actually;
+    calcXirr(transactions) {
+        try {
+            this.xirr = Number((xirr(transactions) * 100).toFixed(2));
+        } catch(err) {
+            this.xirr = NaN;
+            console.log(`Failed to calc XIRR for ${this.secid}: ${err}`);
+        }
+    }
+
+    calcTotalValue() {
+        this.currValue = Number((this.quantity * this.currPrice).toFixed(2));
+    }
+
+    calcTotalCommission() {
+        this.deals.forEach(deal => {
+            this.totalCommissions += deal.brokerCommission + deal.tradingSystemCommission;
         });
 
+        this.totalCommissions = Number(this.totalCommissions.toFixed(2));
+    }
+}
+
+
+class Share extends Security {
+    constructor(secid, deals, payments=[]) {
+        super(secid, deals, payments);
+
+        // Выплаты, произведённые по бумаге. Если дивиденды зачисляются
+        // на внешний счёт, то они никак не отображаются в отчётах брокера (Сбер)
+        // Соответственно, нужно добавлять выплаты вручную
+        this.payments = payments;
+
+        // сумма дивидендов по бумаге
+        this.dividends = 0;
+    }
+
+    async build(onDate=null) {
+        await super.build();
+
+        super.processDeals(this.deals);
+
+        if (onDate === null) {
+            let info = await moexISS.info(this.spec.mainboard);
+
+            this.lotSize = info.securities["LOTSIZE"];
+            this.currPrice = info.marketdata["LAST"];
+        } else {
+            let info = await moexISS.onDate(this.spec.mainboard, onDate);
+
+            this.currPrice = info["CLOSE"];
+        }
+
+        this.calcAvgPrice();
+        this.calcTotalCommission();
+        this.calcExchangeGain();
+        this.calcTotalReturn();
+        this.calcTotalValue();
+        this.calcXirr();
+    }
+
+    calcTotalReturn() {
+        this.payments.forEach(payment => {
+            this.dividends += payment.actually;
+        });
+
+        this.dividends = Number((this.dividends).toFixed(2));
+
         this.totalReturn = Number(
-            (this.closedDealsReturn + this.exchangeGain + this.totalPayments - this.totalCommissions)
-            .toFixed(this.spec.mainboard.decimals));
+            (this.closedDealsReturn + this.exchangeGain + this.dividends - this.totalCommissions)
+            .toFixed(2));
     }
 
     calcXirr() {
@@ -185,7 +236,7 @@ class Security {
         // если позиция по инструменту не закрыта, то как-бы продаём по текущей рыночной цене
         if (this.quantity > 0) {
             transactions.push({
-                "amount": this.quantity * (this.currPrice + this.accruedInterest),
+                "amount": this.quantity * this.currPrice,
                 "when": Date.now()
             });
         }
@@ -200,78 +251,7 @@ class Security {
 
         this.totalReturnRate = Number(((this.totalVolumeSell / this.totalVolumeBuy - 1) * 100).toFixed(2));
 
-        try {
-            this.xirr = Number((xirr(transactions) * 100).toFixed(2));
-            console.log(`Success XIRR calc: ${this.secid}`);
-        } catch(err) {
-            this.xirr = NaN;
-            console.log(`Failed to calc XIRR for ${this.secid}: ${err}`);
-        }
-    }
-
-    calcTotalValue() {
-        this.currValue = Number((this.quantity * this.currPrice).toFixed(2));
-    }
-
-    calcTotalCommission() {
-        this.deals.forEach(deal => {
-            this.totalCommissions += deal.brokerCommission + deal.tradingSystemCommission;
-        });
-
-        this.totalCommissions = Number(this.totalCommissions.toFixed(2));
-    }
-
-    calcAll() {
-       this.calcAvgPrice();
-       this.calcTotalCommission();
-       this.calcExchangeGain();
-       this.calcTotalReturn();
-       this.calcTotalValue();
-       this.calcXirr();
-    }
-}
-
-
-class Share extends Security {
-    constructor(secid, deals, payments=[]) {
-        super(secid, deals, payments);
-        // сумма дивидендов по бумаге
-        this.dividends = 0;
-    }
-
-    async build(onDate=null) {
-        try {
-            await super.build();
-        } catch(err) {
-            console.log(err);
-            return;
-        }
-
-        if (onDate === null) {
-            let info = await moexISS.info(this.spec.mainboard);
-
-            this.lotSize = info.securities['LOTSIZE'];
-            this.currPrice = info.marketdata['LAST'];
-
-            super.processDeals(this.deals);
-            super.calcAll();
-        } else {
-            try {
-                let info = await moexISS.onDate(this.spec.mainboard, onDate);
-
-                this.currPrice = info["CLOSE"];
-
-                super.processDeals(this.deals);
-
-                this.calcAvgPrice();
-                this.calcTotalCommission();
-                this.calcExchangeGain();
-                this.calcTotalReturn();
-                this.calcTotalValue();
-            } catch(err) {
-                console.log(err);
-            }
-        }
+        super.calcXirr(transactions);
     }
 }
 
@@ -285,6 +265,12 @@ class Bond extends Security {
         */
         this.payments = [];
 
+        // выплаченный НКД (для облигаций, для акций просто будет равен нулю)
+        this.paidAccruedInterest = 0;
+
+        // текущий НКД (для облигаций, для акций просто будет равен нулю)
+        this.accruedInterest = 0;
+
         // сумма купонных выплат
         this.coupons = 0;
 
@@ -294,7 +280,7 @@ class Bond extends Security {
 
     async build() {
         await super.build();
-        super.processDeals(this.deals);
+        this.processDeals(this.deals);
 
         this.lotValue = this.spec.description['FACEVALUE'];
         this.fixSberbankReportPrice();
@@ -311,7 +297,21 @@ class Bond extends Security {
         }
 
         await this.calcPayments();
-        super.calcAll();
+
+        this.calcAvgPrice();
+        this.calcTotalCommission();
+        this.calcExchangeGain();
+        this.calcTotalReturn();
+        this.calcTotalValue();
+        this.calcXirr();
+    }
+
+    processDeals(deals) {
+        super.processDeals(this.deals);
+
+        deals.forEach(deal => {
+            this.paidAccruedInterest += deal.accruedInterest;
+        });
     }
 
     async calcPayments() {
@@ -323,15 +323,11 @@ class Bond extends Security {
             if (coupondate <= Date.now()) {
                 const quantity = this.#getQuantityOnDate(coupon.coupondate);
 
-                if (quantity > 0) {
-                    let record = new DataParser.PaymentRecord();
-                    record.secid = this.secid;
-                    record.date = coupon.coupondate;
-                    record.quantity = quantity
-                    record.payment = coupon.value;
-                    // TODO! Ставку нужно вынести как настраиваемый на уровне проекта параметр
-                    record.actually = coupon.value * quantity * 0.87;
-                    this.payments.push(record);
+                if (quantity) {
+                    // TODO! Ставку налога нужно вынести как константу уровня проекта
+                    const value = coupon.value * quantity * 0.87;
+                    this.coupons += value;
+                    this.payments.push({value: value, date: coupon.coupondate});
                 }
             }
         });
@@ -343,13 +339,9 @@ class Bond extends Security {
                 const quantity = this.#getQuantityOnDate(amortization.amortdate);
 
                 if (quantity > 0) {
-                    let record = new DataParser.PaymentRecord();
-                    record.secid = this.secid;
-                    record.date = amortization.amortdate;
-                    record.quantity = quantity;
-                    record.payment = amortization.value;
-                    record.actually = amortization.value * quantity;
-                    this.payments.push(record);
+                    const value = amortization.value * quantity;
+                    this.repaid += value;
+                    this.payments.push({value: value, date: amortization.amortdate});
                 }
             }
         });
@@ -384,20 +376,56 @@ class Bond extends Security {
     }
 
     calcTotalReturn() {
-        this.payments.forEach(payment => {
-            this.totalPayments += payment.actually;
-        });
-
-        this.totalPayments = Number((this.totalPayments).toFixed(2));
-
         this.totalReturn = Number(
             (this.closedDealsReturn +
              this.exchangeGain +
-             this.totalPayments +
+             this.coupons +
+             this.repaid +
              this.accruedInterest * this.quantity -
              this.paidAccruedInterest -
              this.totalCommissions)
             .toFixed(2));
+    }
+
+    calcXirr() {
+        let transactions = [];
+
+        this.deals.forEach(deal => {
+            let volume = (deal.operation === 'Покупка') ? -deal.volume : deal.volume;
+
+            transactions.push({
+                "amount": volume,
+                "when": new Date(deal.date)
+            });
+        });
+
+        this.payments.forEach(payment => {
+            transactions.push({
+                "amount": payment.value,
+                "when": new Date(payment.date)
+            });
+        });
+
+        // если позиция по инструменту не закрыта, то как-бы продаём по текущей рыночной цене
+        if (this.quantity > 0) {
+            transactions.push({
+                "amount": this.quantity * (this.currPrice + this.accruedInterest),
+                "when": Date.now()
+            });
+        }
+
+        transactions.forEach(t => {
+            if (t.amount > 0) {
+                this.totalVolumeSell += t.amount;
+            }  else {
+                this.totalVolumeBuy += -t.amount;
+            }
+        });
+
+        this.totalReturnRate =
+            Number(((this.totalVolumeSell / this.totalVolumeBuy - 1) * 100).toFixed(2));
+
+        super.calcXirr(transactions);
     }
 }
 

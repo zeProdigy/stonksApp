@@ -149,7 +149,4 @@ class PaymentRecord {
 }
 
 
-module.exports = {
-    DataParser,
-    PaymentRecord
-};
+module.exports = DataParser;
