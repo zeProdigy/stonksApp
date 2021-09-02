@@ -52,11 +52,6 @@ class Portfolio {
             "val": 0,
         };
 
-        this.investedTo = { // TODO! Этот параметр отличается от this.assets?
-            "shares": 0,
-            "bonds": 0,
-        };
-
         // Врямя существования портфеля
         this.lifetime = 0;
 
@@ -101,7 +96,6 @@ class Portfolio {
 
         this.calcCash();
         this.calcLifetime();
-        this.calcProportions();
         this.calcMarketValue();
         this.calcReturn();
         this.calcVolumes();
@@ -185,7 +179,8 @@ class Portfolio {
 
         this.cash.val = this.cash.in - this.cash.out;
 
-        this.assets.cash.currValue += this.cash.val;
+        // Начальное значение средств на счёте, доступное для операций
+        this.assets.cash.currValue = this.cash.val;
 
         this.deals.forEach(deal => {
             switch (deal.operation) {
@@ -203,11 +198,12 @@ class Portfolio {
         });
 
         Object.values(this.shares).forEach(share => {
-            this.assets.cash.currValue += share.totalPayments;
+            this.assets.cash.currValue += share.dividends;
         });
 
         Object.values(this.bonds).forEach(bond => {
-            this.assets.cash.currValue += bond.totalPayments;
+            this.assets.cash.currValue += bond.coupons;
+            this.assets.cash.currValue += bond.repaid;
         });
 
         this.assets.cash.currValue =
@@ -227,19 +223,6 @@ class Portfolio {
         const now = (this.onDate === null) ? Date.now() : new Date(this.onDate);
         const firstOperation = new Date(this.operations[0].date);   // считаем от времени первой сделки
         this.lifetime = Math.round((now - firstOperation.valueOf()) / (1000 * 60 * 60 * 24));
-    }
-
-    calcProportions() {
-        Object.values(this.shares).forEach(share => {
-            this.investedTo.shares += share.quantity * share.avgPrice;
-        });
-
-        Object.values(this.bonds).forEach(bond => {
-            this.investedTo.bonds += bond.quantity * bond.avgPrice;
-        });
-
-        this.investedTo.shares = Number(this.investedTo.shares.toFixed(2));
-        this.investedTo.bonds = Number(this.investedTo.bonds.toFixed(2));
     }
 
     calcMarketValue() {
@@ -280,13 +263,13 @@ class Portfolio {
         Object.values(this.shares).forEach(share => {
             this.return.closedDeals += share.closedDealsReturn;
             this.return.exchangeGain += share.exchangeGain;
-            this.return.dividends += share.totalPayments;
+            this.return.dividends += share.dividends;
         });
 
         Object.values(this.bonds).forEach(bond => {
             this.return.closedDeals += bond.closedDealsReturn;
             this.return.exchangeGain += bond.exchangeGain;
-            this.return.coupons += bond.totalPayments;
+            this.return.coupons += bond.coupons;
         });
 
         this.return.closedDeals  = Number(this.return.closedDeals.toFixed(2));

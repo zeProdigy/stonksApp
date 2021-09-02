@@ -280,10 +280,11 @@ class Bond extends Security {
 
     async build() {
         await super.build();
-        this.processDeals(this.deals);
 
         this.lotValue = this.spec.description['FACEVALUE'];
         this.fixSberbankReportPrice();
+
+        this.processDeals(this.deals);
 
         if (this.spec.mainboard.is_traded) {
             let info = await moexISS.info(this.spec.mainboard);
@@ -353,6 +354,10 @@ class Bond extends Security {
         отдельные формулы, а не брать реализованные в родительском классе
     */
     fixSberbankReportPrice() {
+        if (this.hasOwnProperty('lotValue')) {
+            throw new Error('lotValue property is undefined');
+        }
+
         this.deals.forEach(deal => {
             deal.price *= this.lotValue / 100;
         });
