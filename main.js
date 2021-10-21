@@ -24,7 +24,13 @@ app.on('ready', () => {
     });
 
     mainWindow.webContents.openDevTools();
-    mainWindow.loadFile(path.join(app.getAppPath(), 'assets/pages/login.html'));
+
+    const portfolioList = controller.getPortfolioList();
+    const file = (portfolioList.length === 0) ?
+        'assets/pages/createPortfolio.html' :
+        'assets/pages/selectPortfolio.html';
+
+    mainWindow.loadFile(path.join(app.getAppPath(), file));
 });
 
 
@@ -76,6 +82,14 @@ ipcMain.on('select-portfolio', async (event, data) => {
     console.log('Input: ', data);
     await controller.buildPortfolio(data.name);
     mainWindow.loadFile(path.join(app.getAppPath(), 'assets/pages/index.html'));
+});
+
+
+ipcMain.handle('get-portfolio-list', (event, data) => {
+    const portfolioList = controller.getPortfolioList();
+    return {
+        list: portfolioList
+    };
 });
 
 

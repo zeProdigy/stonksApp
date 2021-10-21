@@ -12,25 +12,22 @@
   </head>
 
   <body>
-    <div class="container">
-      <div class="row">
-        <div class="col-2">
-          <nav class="nav flex-column">
-            <a class="nav-link active" href="#hash1">Портфель</a>
-            <a class="nav-link" href="#portfolioShares">Акции</a>
-            <a class="nav-link" href="#portfolioBonds">Облигации</a>
-          </nav>
+    <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-2 text-center"><h1>Stonks!</h1></div>
+            <div class="col-10 align-self-center">
+              <div class="btn-group">
+                <a href="#portfolio" type="button" class="btn btn-secondary">Портфель</a>
+                <a href="#delas" type="button" class="btn btn-secondary">Сделки</a>
+                <a href="#analitics" type="button" class="btn btn-secondary">Аналитика</a>
+              </div>
+            </div>
         </div>
-        <div class="col">
-          <div class="container" id="appContent">
-          </div>
-        </div>
-      </div>
+      <div class="row mt-3" id="appContainer"></div>
     </div>
 
     <!-- Optional JavaScript -->
     <script src="../js/index.js"></script>
-    <script src="../js/tableSorter.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>

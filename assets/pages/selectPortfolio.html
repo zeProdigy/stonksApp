@@ -9,15 +9,26 @@
 
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;1,300&display=swap" rel='stylesheet' type='text/css'>
+
+    <script src="https://unpkg.com/vue@next"></script>
   </head>
 
   <body>
-    <div class="container" id="appContent">
-
+    <div class="container" id="appContainer">
+      <form class="needs-validation">
+        <div class="container text-center" id="content">
+          <div class="form-group">
+            <select class="form-control">
+              <option v-for="elem in list">{{elem}}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-lg btn-primary mt-3">Готово!</button>
+        </div>
+      </form>
     </div>
 
     <!-- Optional JavaScript -->
-    <script src="../js/login.js"></script>
+    <script src="../js/selectPortfolio.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>

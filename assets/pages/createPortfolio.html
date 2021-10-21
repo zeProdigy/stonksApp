@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="../css/login.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;1,300&display=swap" rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+    <div class="container" id="appContent">
+      <form class="needs-validation" novalidate>
+        <div class="container" id="content">
+          <h1 class="text-center mb-5">Stonks!</h1>
+          <input class="form-control mb-1" type="text" placeholder="Имя" id="nameField" required>
+          <div class="custom-file mb-1">
+            <input type="file" class="custom-file-input" id="inputFile1" accept=".xlsx" required>
+            <label class="custom-file-label" for="inputFile1">Файл с операциями по счёту...</label>
+          </div>
+          <div class="custom-file mb-1">
+            <input type="file" class="custom-file-input" id="inputFile2" accept=".xlsx" required>
+            <label class="custom-file-label" for="inputFile2">Файл со сделками...
+          </div>
+          <div class="custom-file mb-1">
+            <input type="file" class="custom-file-input" id="inputFile3" accept=".xlsx">
+            <label class="custom-file-label" for="inputFile3")><strong>[Опционально] Файл с выплатами...</strong></label>
+          </div>
+          <h6 class="text-center mb-3"><i>Поддерживаются только файлы в формате <b>xlsx</b></i></h6>
+          <div class="text-center">
+            <button type="submit" class="btn btn-lg btn-primary mt-3" id="confirmButton">Готово!</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <script src="../js/createPortfolio.js"></script>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  </body>
+</html>
