@@ -354,7 +354,7 @@ class Bond extends Security {
         отдельные формулы, а не брать реализованные в родительском классе
     */
     fixSberbankReportPrice() {
-        if (this.hasOwnProperty('lotValue')) {
+        if (!this.hasOwnProperty('lotValue')) {
             throw new Error('lotValue property is undefined');
         }
 
